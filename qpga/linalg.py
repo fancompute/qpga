@@ -1,15 +1,6 @@
 import numpy as np
 
 
-def get_random_state_vector(num_wires):
-    '''Returns a random 2**n-sized complex-valued state vector'''
-    N = 2 ** num_wires
-    mags = np.random.rand(N)
-    mags /= np.linalg.norm(mags)
-    phases = np.exp(1j * 2 * np.pi * np.random.rand(N))
-    return mags * phases
-
-
 def tensor_product(state1, state2):
     '''
     Returns the Kronecker product of two states

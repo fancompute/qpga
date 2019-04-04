@@ -1,3 +1,4 @@
+import keras
 import numpy as np
 import tensorflow as tf
 
@@ -12,6 +13,11 @@ def k_real(x):
 
 def k_imag(x):
     return x[:, 1, :]
+
+
+def k_conj(x):
+    '''Conjugates a concatenated complex tensor'''
+    return tf.stack([k_real(x), -1 * k_imag(x)], axis = 1)
 
 
 def np_to_k_complex(x):
@@ -33,3 +39,15 @@ def np_to_complex(x):
 def reshape_state_vector(state):
     dim = int(np.sqrt(len(state)))
     return np.reshape(state, (dim, dim))
+
+
+class FrameWriterCallback(keras.callbacks.Callback):
+
+    def __init__(self, input_state = None, target_state = None):
+        super().__init__()
+        self.input_state = input_state
+        self.target_state = target_state
+        self.predictions = []
+
+    def on_batch_begin(self, batch, logs = None):
+        self.predictions.append(self.model.predict(self.input_state))
