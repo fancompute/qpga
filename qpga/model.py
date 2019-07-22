@@ -13,7 +13,7 @@ def phase_shifts_to_tensor_product_space(phi_0, phi_1):
     phi_0_complex = tf.complex(tf.cos(phi_0), tf.sin(phi_0))
     phi_1_complex = tf.complex(tf.cos(phi_1), tf.sin(phi_1))
 
-    single_qubit_ops = tf.unstack(tf.map_fn(lambda U: tf.diag(U), tf.transpose([phi_0_complex, phi_1_complex])))
+    single_qubit_ops = tf.unstack(tf.map_fn(lambda U: tf.linalg.tensor_diag(U), tf.transpose([phi_0_complex, phi_1_complex])))
 
     return tf.linalg.LinearOperatorKronecker([tf.linalg.LinearOperatorFullMatrix(U) for U in single_qubit_ops])
 
@@ -78,22 +78,15 @@ class SingleQubitOperationLayer(Layer):
 
 class CPhaseLayer(Layer):
 
-    def __init__(self, num_qubits, parity = 0, coupling_strengths = None, use_standard_cphase = False, **kwargs):
+    def __init__(self, num_qubits, parity = 0, use_standard_cphase = False, **kwargs):
         self.num_qubits = num_qubits
         self.parity = parity
-        self.coupling_strengths = coupling_strengths
         self.use_standard_cphase = use_standard_cphase
         self.output_dim = 2 ** num_qubits
         super(CPhaseLayer, self).__init__(**kwargs)
 
     def get_cphase_gate(self):
-        OPERATOR = CPHASE if self.use_standard_cphase else CPHASE_MOD
-        if self.coupling_strengths is not None:
-            low, high = self.coupling_strengths
-            coupling_strength = np.random.rand(low, high)
-            return OPERATOR * coupling_strength ** 2 + IDENTITY * np.sqrt(1 - coupling_strength ** 2)
-        else:
-            return OPERATOR
+        return CPHASE if self.use_standard_cphase else CPHASE_MOD
 
     def build(self, input_shape):
         input_dim = input_shape[-1]
@@ -114,7 +107,8 @@ class CPhaseLayer(Layer):
             if 2 * num_cphase + 1 < self.num_qubits:
                 ops.append(IDENTITY)
 
-        self.transfer_matrix = tf.convert_to_tensor(tensors(ops), dtype = tf.complex128)
+        self.transfer_matrix_np = tensors(ops)
+        self.transfer_matrix = tf.convert_to_tensor(self.transfer_matrix_np, dtype = tf.complex128)
 
         super(CPhaseLayer, self).build(input_shape)
 
@@ -138,15 +132,13 @@ class QPGA(keras.Model):
     def __init__(self, num_qubits, depth,
                  complex_inputs = False,
                  complex_outputs = False,
-                 coupling_strengths = None,
-                 use_standard_cphase = False):
+                 use_standard_cphase = True):
         super(QPGA, self).__init__(name = 'qpga')
 
         self.num_qubits = num_qubits
         self.depth = depth
         self.complex_inputs = complex_inputs
         self.complex_outputs = complex_outputs
-        self.coupling_strengths = coupling_strengths
         self.use_standard_cphase = use_standard_cphase
 
         self.input_layer = SingleQubitOperationLayer(self.num_qubits)
@@ -155,7 +147,6 @@ class QPGA(keras.Model):
         for i in range(depth):
             self.cphase_layers.append(CPhaseLayer(self.num_qubits,
                                                   parity = i % 2,
-                                                  coupling_strengths = self.coupling_strengths,
                                                   use_standard_cphase = self.use_standard_cphase))
             self.single_qubit_layers.append(SingleQubitOperationLayer(self.num_qubits))
 
