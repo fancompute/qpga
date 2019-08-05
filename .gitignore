@@ -1,5 +1,6 @@
 frames/
 PennyLane_examples/
+logs/
 
 # Standard stuff ===============================================================
 
@@ -115,3 +116,4 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+/logs/

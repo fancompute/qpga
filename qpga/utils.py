@@ -1,6 +1,28 @@
-import keras
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.keras.callbacks import Callback
+from tqdm import tqdm, tqdm_notebook
+
+
+def is_unitary(m):
+    return np.allclose(np.eye(m.shape[0]), m.conj().T @ m, rtol = 1e-3, atol = 1e-6)
+
+
+def is_notebook():
+    '''Tests to see if we are running in a jupyter notebook environment'''
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            return True  # Jupyter notebook or qtconsole
+        elif shell == 'TerminalInteractiveShell':
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False  # Probably standard Python interpreter
+
+
+pbar = tqdm_notebook if is_notebook() else tqdm
 
 
 def k_complex_from_real(x):
@@ -29,7 +51,7 @@ def k_to_tf_complex(x):
 
 
 def tf_to_k_complex(x):
-    return tf.stack([tf.real(x), tf.imag(x)], axis = 1)
+    return tf.stack([tf.math.real(x), tf.math.imag(x)], axis = 1)
 
 
 def np_to_complex(x):
@@ -41,7 +63,7 @@ def reshape_state_vector(state):
     return np.reshape(state, (dim, dim))
 
 
-class FrameWriterCallback(keras.callbacks.Callback):
+class FrameWriterCallback(Callback):
 
     def __init__(self, input_state = None, target_state = None):
         super().__init__()
