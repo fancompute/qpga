@@ -7,8 +7,6 @@ from tensorflow.python.keras.layers import Layer, Lambda
 
 from qpga.constants import IDENTITY, CPHASE_MOD, BS_MATRIX, CPHASE
 from qpga.linalg import tensors
-from qpga.utils import k_to_tf_complex, tf_to_k_complex
-
 
 def phase_shifts_to_tensor_product_space(phi_0, phi_1):
     phi_0_complex = tf.complex(tf.cos(phi_0), tf.sin(phi_0))
@@ -166,16 +164,16 @@ class QPGA(keras.Model):
         '''Converts the QPGA instance into a sequential model for easier inspection'''
         model = Sequential()
 
-        if not self.complex_inputs:
-            model.add(Lambda(lambda x: k_to_tf_complex(x)))
+        # if not self.complex_inputs:
+        #     model.add(Lambda(lambda x: k_to_tf_complex(x)))
 
         model.add(self.input_layer)
         for cphase_layer, single_qubit_layer in zip(self.cphase_layers, self.single_qubit_layers):
             model.add(cphase_layer)
             model.add(single_qubit_layer)
 
-        if not self.complex_outputs:
-            model.add(Lambda(lambda x: tf_to_k_complex(x)))
+        # if not self.complex_outputs:
+        #     model.add(Lambda(lambda x: tf_to_k_complex(x)))
 
         return model
 
@@ -183,16 +181,16 @@ class QPGA(keras.Model):
     def call(self, inputs):
         x = inputs
 
-        if not self.complex_inputs:
-            x = k_to_tf_complex(x)
+        # if not self.complex_inputs:
+        #     x = k_to_tf_complex(x)
 
         x = self.input_layer(x)
         for cphase_layer, single_qubit_layer in zip(self.cphase_layers, self.single_qubit_layers):
             x = cphase_layer(x)
             x = single_qubit_layer(x)
 
-        if not self.complex_outputs:
-            x = tf_to_k_complex(x)
+        # if not self.complex_outputs:
+        #     x = tf_to_k_complex(x)
 
         return x
 

@@ -6,16 +6,16 @@ from squanch import QStream
 from tensorflow.python import keras
 from tensorflow.python.keras.optimizers import Adam
 
-from qpga import get_random_state_vector, np_to_k_complex, QPGA, antifidelity
+from qpga import get_random_state_vector, QPGA, antifidelity
 
 
 def prepare_training_data(squanch_circuit, num_qubits, num_states):
     # Generate random state vectors
-    states = np.array([get_random_state_vector(num_qubits) for _ in range(num_states)])
-    states[0] = np.array([1] + [0] * (2 ** num_qubits - 1), dtype = np.complex128)  # first state should be zero qubit
+    in_states = np.array([get_random_state_vector(num_qubits) for _ in range(num_states)])
+    in_states[0] = np.array([1] + [0] * (2 ** num_qubits - 1), dtype = np.complex128)  # first state should be zero qubit
 
     # Prepare a squanch qstream to operate on
-    qstream = QStream.from_array(np.copy(states), use_density_matrix = False)
+    qstream = QStream.from_array(np.copy(in_states), use_density_matrix = False)
 
     # Apply the circuit to the input states
     for qsys in qstream:
@@ -23,11 +23,7 @@ def prepare_training_data(squanch_circuit, num_qubits, num_states):
 
     out_states = np.copy(qstream.state)
 
-    # Return states as tf tensors
-    in_data = np_to_k_complex(states)
-    out_data = np_to_k_complex(out_states)
-
-    return in_data, out_data
+    return in_states, out_states
 
 
 def fidelity_depth_search(depths, in_data, out_data,
@@ -61,7 +57,7 @@ def fidelity_depth_search(depths, in_data, out_data,
     for depth in depths:
         print(f"\n\n\nTraining circuit of depth {depth} =============================================================")
         for attempt in range(max_attempts):
-            print(f"Attempt {attempt}/{max_attempts}...")
+            print(f"\n\n=> Attempt {attempt + 1}/{max_attempts}...")
             model = QPGA(num_qubits, depth).as_sequential()
             model.compile(optimizer = Adam(lr = learning_rate),
                           loss = antifidelity,
@@ -83,10 +79,10 @@ def fidelity_depth_search(depths, in_data, out_data,
                                 verbose = 2)
 
             antifid = history.history["antifidelity"][-1]
+            fidelity = 1 - antifid
 
             if antifid <= target_antifidelity:
                 print(f"Model with depth {depth} attained antifidelity {antifid}.")
-                fidelity = 1 - antifid
                 fidelities[depth] = fidelity
                 with open(f'QFT_{num_qubits}_qubits_fidelities.pickle', 'wb') as handle:
                     pickle.dump(fidelities, handle)
@@ -97,7 +93,7 @@ def fidelity_depth_search(depths, in_data, out_data,
                     break
             else:
                 print(f"Model with depth {depth} did not converge to target antifidelity: {antifid}.")
-                fidelities[depth] = None
+                fidelities[depth] = fidelity
                 with open(f'QFT_{num_qubits}_qubits_fidelities.pickle', 'wb') as handle:
                     pickle.dump(fidelities, handle)
 
