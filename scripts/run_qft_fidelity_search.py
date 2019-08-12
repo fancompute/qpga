@@ -11,9 +11,9 @@ K.set_floatx('float64')
 if __name__ == "__main__":
     N = int(sys.argv[-1])
 
-    sys.stdout = Logger(f"QFT_fidelities_{N}_qubits.log")
+    sys.stdout = Logger("QFT_fidelities_{}_qubits.log".format(N))
 
-    print(f"Running fidelity search for {N} qubits...")
+    print("Running fidelity search for {} qubits...".format(N))
 
     num_states = 2000 * N
 
