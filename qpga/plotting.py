@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import qutip
 
-from qpga.utils import np_to_complex, reshape_state_vector
+from qpga.utils import reshape_state_vector
 
 
 def plot_state_comparison(true_state, pred_state, iteration = None, savefig = False):
-    true_state = np_to_complex(true_state)[0]
-    pred_state = np_to_complex(pred_state)[0]
+    # true_state = np_to_complex(true_state)[0]
+    # pred_state = np_to_complex(pred_state)[0]
     fidelity = np.abs(np.dot(true_state.conj(), pred_state)) ** 2
     mat_true = reshape_state_vector(true_state)
     mat_pred = reshape_state_vector(pred_state)

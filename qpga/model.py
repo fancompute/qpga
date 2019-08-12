@@ -197,8 +197,8 @@ class QPGA(keras.Model):
 
 def antifidelity(state_true, state_pred):
     # inner_prods = tf.einsum('bs,bs->b', tf.math.conj(state_true), state_pred)
-    state_true = k_to_tf_complex(state_true)
-    state_pred = k_to_tf_complex(state_pred)
+    # state_true = k_to_tf_complex(state_true)
+    # state_pred = k_to_tf_complex(state_pred)
     inner_prods = tf.reduce_sum(tf.multiply(tf.math.conj(state_true), state_pred), 1)
     amplitudes = tf.abs(inner_prods)
     return tf.ones_like(amplitudes) - amplitudes ** 2
