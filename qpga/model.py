@@ -3,10 +3,11 @@ import tensorflow as tf
 from tensorflow.python import keras
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.backend import dot
-from tensorflow.python.keras.layers import Layer, Lambda
+from tensorflow.python.keras.layers import Layer
 
 from qpga.constants import IDENTITY, CPHASE_MOD, BS_MATRIX, CPHASE
 from qpga.linalg import tensors
+
 
 def phase_shifts_to_tensor_product_space(phi_0, phi_1):
     phi_0_complex = tf.complex(tf.cos(phi_0), tf.sin(phi_0))
@@ -29,7 +30,7 @@ class SingleQubitOperationLayer(Layer):
         input_dim = input_shape[-1]
         assert input_dim == self.output_dim
 
-        initializer = keras.initializers.RandomUniform(minval = 0, maxval = 2 * np.pi)
+        initializer = tf.random_uniform_initializer(minval = 0, maxval = 2 * np.pi)
 
         # Create a trainable weight variable for this layer.
         self.alphas = self.add_weight(name = 'alphas',
@@ -49,35 +50,36 @@ class SingleQubitOperationLayer(Layer):
                                     shape = (self.num_qubits,),
                                     initializer = initializer)
 
-        # self.input_shifts = phase_shifts_to_tensor_product_space(self.alphas, self.betas).to_dense()
-        # self.theta_shifts = phase_shifts_to_tensor_product_space(self.thetas, tf.zeros_like(self.thetas)).to_dense()
-        # self.phi_shifts = phase_shifts_to_tensor_product_space(self.phis, tf.zeros_like(self.phis)).to_dense()
-        #
-        # self.bs_matrix = tf.convert_to_tensor(tensors([BS_MATRIX] * self.num_qubits), dtype = tf.complex128)
+        self.input_shifts = phase_shifts_to_tensor_product_space(self.alphas, self.betas).to_dense()
+        self.theta_shifts = phase_shifts_to_tensor_product_space(self.thetas, tf.zeros_like(self.thetas)).to_dense()
+        self.phi_shifts = phase_shifts_to_tensor_product_space(self.phis, tf.zeros_like(self.phis)).to_dense()
 
-    @tf.function
-    def get_hilbert_space_matrices(self):
-        input_shifts = phase_shifts_to_tensor_product_space(self.alphas, self.betas).to_dense()
-        theta_shifts = phase_shifts_to_tensor_product_space(self.thetas, tf.zeros_like(self.thetas)).to_dense()
-        phi_shifts = phase_shifts_to_tensor_product_space(self.phis, tf.zeros_like(self.phis)).to_dense()
-        bs_matrix = tf.convert_to_tensor(tensors([BS_MATRIX] * self.num_qubits), dtype = tf.complex128)
-        return input_shifts, theta_shifts, phi_shifts, bs_matrix
+        self.bs_matrix = tf.convert_to_tensor(tensors([BS_MATRIX] * self.num_qubits), dtype = tf.complex128)
 
-    @tf.function
+        # For TF 1.x
+        super(SingleQubitOperationLayer, self).build(input_shape)
+
+    # @tf.function
+    # def get_hilbert_space_matrices(self):
+    #     input_shifts = phase_shifts_to_tensor_product_space(self.alphas, self.betas).to_dense()
+    #     theta_shifts = phase_shifts_to_tensor_product_space(self.thetas, tf.zeros_like(self.thetas)).to_dense()
+    #     phi_shifts = phase_shifts_to_tensor_product_space(self.phis, tf.zeros_like(self.phis)).to_dense()
+    #     bs_matrix = tf.convert_to_tensor(tensors([BS_MATRIX] * self.num_qubits), dtype = tf.complex128)
+    #     return input_shifts, theta_shifts, phi_shifts, bs_matrix
+
     def call(self, x, **kwargs):
-
         out = x
 
         # The @tf.function decorator means that these tensor products are only computed once, so this isn't expensive
-        input_shifts, theta_shifts, phi_shifts, bs_matrix = self.get_hilbert_space_matrices()
+        # input_shifts, theta_shifts, phi_shifts, bs_matrix = self.get_hilbert_space_matrices()
 
         # out = k_to_tf_complex(out)
 
-        out = dot(out, input_shifts)
-        out = dot(out, bs_matrix)
-        out = dot(out, theta_shifts)
-        out = dot(out, bs_matrix)
-        out = dot(out, phi_shifts)
+        out = dot(out, self.input_shifts)
+        out = dot(out, self.bs_matrix)
+        out = dot(out, self.theta_shifts)
+        out = dot(out, self.bs_matrix)
+        out = dot(out, self.phi_shifts)
 
         # out = tf_to_k_complex(out)
 
@@ -121,7 +123,10 @@ class CPhaseLayer(Layer):
         self.transfer_matrix_np = tensors(ops)
         self.transfer_matrix = tf.convert_to_tensor(self.transfer_matrix_np, dtype = tf.complex128)
 
-    @tf.function
+        # For TF 1.x
+        super(CPhaseLayer, self).build(input_shape)
+
+    # @tf.function
     def call(self, x, **kwargs):
         out = x
 
@@ -177,7 +182,7 @@ class QPGA(keras.Model):
 
         return model
 
-    @tf.function
+    # @tf.function
     def call(self, inputs):
         x = inputs
 
