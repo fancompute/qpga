@@ -55,9 +55,9 @@ def fidelity_depth_search(depths, in_data, out_data,
     fidelities = {}
 
     for depth in depths:
-        print("\n\n\nTraining circuit of depth {} ===================================================".format(depth))
+        print(f"\n\n\nTraining circuit of depth {depth} =============================================================")
         for attempt in range(max_attempts):
-            print("\n\n=> Attempt {}/{}...".format(attempt+1, max_attempts))
+            print(f"\n\n=> Attempt {attempt + 1}/{max_attempts}...")
             model = QPGA(num_qubits, depth).as_sequential()
             model.compile(optimizer = Adam(lr = learning_rate),
                           loss = antifidelity,
@@ -82,19 +82,19 @@ def fidelity_depth_search(depths, in_data, out_data,
             fidelity = 1 - antifid
 
             if antifid <= target_antifidelity:
-                print("Model with depth {} attained antifidelity {}.".format(depth, antifid))
+                print(f"Model with depth {depth} attained antifidelity {antifid}.")
                 fidelities[depth] = fidelity
-                with open('QFT_{}_qubits_fidelities.pickle'.format(num_qubits), 'wb') as handle:
+                with open(f'QFT_{num_qubits}_qubits_fidelities.pickle', 'wb') as handle:
                     pickle.dump(fidelities, handle)
                 if return_on_first_convergence:
-                    print("Found circuit of depth {} which converged to desired fidelity. Returning!".format(depth))
+                    print(f"Found circuit of depth {depth} which converged to desired fidelity. Returning!")
                     return fidelities
                 else:
                     break
             else:
-                print("Model with depth {} did not converge to target antifidelity: {}.".format(depth, antifid))
+                print(f"Model with depth {depth} did not converge to target antifidelity: {antifid}.")
                 fidelities[depth] = fidelity
-                with open('QFT_{}_qubits_fidelities.pickle'.format(num_qubits), 'wb') as handle:
+                with open(f'QFT_{num_qubits}_qubits_fidelities.pickle', 'wb') as handle:
                     pickle.dump(fidelities, handle)
 
     return fidelities
