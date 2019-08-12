@@ -1,4 +1,5 @@
 import sys
+import argparse
 
 from tensorflow.python.keras import backend as K
 
@@ -9,7 +10,12 @@ from qpga.circuits import QFT, QFT_layer_count
 K.set_floatx('float64')
 
 if __name__ == "__main__":
-    N = int(sys.argv[-1])
+    parser = argparse.ArgumentParser(description="Run a fidelity search on QPGA with specified number of qubits")
+    parser.add_argument('num_qubits', type=int)
+    parser.add_argument('--start', type=int)
+
+    args = parser.parse_args()
+    N = args.num_qubits
 
     sys.stdout = Logger(f"QFT_fidelities_{N}_qubits.log")
 
@@ -18,7 +24,11 @@ if __name__ == "__main__":
     num_states = 2000 * N
 
     explicit_depth = QFT_layer_count(N, include_swap = True)
-    depths = list(range(explicit_depth // 5, explicit_depth))
+
+    if args.start:
+        depths = list(range(args.start, explicit_depth))
+    else:
+        depths = list(range(explicit_depth // 5, explicit_depth))
 
     in_data, out_data = prepare_training_data(QFT, N, num_states)
 
