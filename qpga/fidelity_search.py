@@ -5,6 +5,7 @@ import numpy as np
 from squanch import QStream
 from tensorflow.python import keras
 from tensorflow.python.keras.optimizers import Adam
+from tqdm import tqdm
 
 from qpga import get_random_state_vector, QPGA, antifidelity
 
@@ -12,13 +13,14 @@ from qpga import get_random_state_vector, QPGA, antifidelity
 def prepare_training_data(squanch_circuit, num_qubits, num_states):
     # Generate random state vectors
     in_states = np.array([get_random_state_vector(num_qubits) for _ in range(num_states)])
-    in_states[0] = np.array([1] + [0] * (2 ** num_qubits - 1), dtype = np.complex128)  # first state should be zero qubit
+    in_states[0] = np.array([1] + [0] * (2 ** num_qubits - 1),
+                            dtype = np.complex128)  # first state should be zero qubit
 
     # Prepare a squanch qstream to operate on
     qstream = QStream.from_array(np.copy(in_states), use_density_matrix = False)
 
     # Apply the circuit to the input states
-    for qsys in qstream:
+    for qsys in tqdm(qstream):
         squanch_circuit(list(qsys.qubits))
 
     out_states = np.copy(qstream.state)
@@ -63,19 +65,23 @@ def fidelity_depth_search(depths, in_data, out_data,
                           loss = antifidelity,
                           metrics = [antifidelity])
 
-            early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss',
-                                                       patience = 4,
-                                                       verbose = 1,
-                                                       restore_best_weights = True)
-            reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',
-                                                          factor = 0.1,
-                                                          patience = 2,
-                                                          verbose = 1,
-                                                          min_lr = 1e-6)
+            if validation_split != 0.0:
+                early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss',
+                                                           patience = 4,
+                                                           verbose = 1,
+                                                           restore_best_weights = True)
+                reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',
+                                                              factor = 0.1,
+                                                              patience = 2,
+                                                              verbose = 1,
+                                                              min_lr = 1e-6)
+                callbacks = [early_stop, reduce_lr]
+            else:
+                callbacks = []
 
             history = model.fit(in_data, out_data, epochs = 25,
                                 validation_split = validation_split,
-                                callbacks = [early_stop, reduce_lr],
+                                callbacks = callbacks,
                                 verbose = 2)
 
             antifid = history.history["antifidelity"][-1]

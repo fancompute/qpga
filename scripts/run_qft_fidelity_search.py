@@ -30,7 +30,9 @@ if __name__ == "__main__":
     else:
         depths = list(range(explicit_depth // 5, explicit_depth))
 
+    print(f"Preparing {num_states} training states...")
     in_data, out_data = prepare_training_data(QFT, N, num_states)
+    print(f"Done! \n\n")
 
     fidelities = fidelity_depth_search(depths,
                                        in_data = in_data,
