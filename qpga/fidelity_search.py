@@ -34,7 +34,9 @@ def fidelity_depth_search(depths, in_data, out_data,
                           validation_split = 0.25,
                           target_antifidelity = 1e-10,
                           learning_rate = 0.01,
+                          max_epochs = 50,
                           max_attempts = 3,
+                          batch_size = 32,
                           return_on_first_convergence = True):
     '''
     Performs a sequential search to find models of given depth which can implement an operator to a given fidelity
@@ -72,16 +74,17 @@ def fidelity_depth_search(depths, in_data, out_data,
                                                            restore_best_weights = True)
                 reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',
                                                               factor = 0.1,
-                                                              patience = 2,
+                                                              patience = 3,
                                                               verbose = 1,
                                                               min_lr = 1e-6)
                 callbacks = [early_stop, reduce_lr]
             else:
                 callbacks = []
 
-            history = model.fit(in_data, out_data, epochs = 25,
+            history = model.fit(in_data, out_data, epochs = max_epochs,
                                 validation_split = validation_split,
                                 callbacks = callbacks,
+                                batch_size = batch_size,
                                 verbose = 2)
 
             antifid = history.history["antifidelity"][-1]

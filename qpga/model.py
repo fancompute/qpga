@@ -3,8 +3,9 @@ import tensorflow as tf
 from tensorflow.python import keras
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.backend import dot
-from tensorflow.python.keras.layers import Layer
+from tensorflow.python.keras.layers import Layer, Lambda
 
+from qpga import tf_to_k_complex, k_to_tf_complex
 from qpga.constants import IDENTITY, CPHASE_MOD, BS_MATRIX, CPHASE
 from qpga.linalg import tensors
 
@@ -73,15 +74,11 @@ class SingleQubitOperationLayer(Layer):
         # The @tf.function decorator means that these tensor products are only computed once, so this isn't expensive
         # input_shifts, theta_shifts, phi_shifts, bs_matrix = self.get_hilbert_space_matrices()
 
-        # out = k_to_tf_complex(out)
-
         out = dot(out, self.input_shifts)
         out = dot(out, self.bs_matrix)
         out = dot(out, self.theta_shifts)
         out = dot(out, self.bs_matrix)
         out = dot(out, self.phi_shifts)
-
-        # out = tf_to_k_complex(out)
 
         return out
 
@@ -128,15 +125,7 @@ class CPhaseLayer(Layer):
 
     # @tf.function
     def call(self, x, **kwargs):
-        out = x
-
-        # out = k_to_tf_complex(x)
-
-        out = dot(out, self.transfer_matrix)
-
-        # out = tf_to_k_complex(out)
-
-        return out
+        return dot(x, self.transfer_matrix)
 
     def compute_output_shape(self, input_shape):
         return input_shape
@@ -169,16 +158,16 @@ class QPGA(keras.Model):
         '''Converts the QPGA instance into a sequential model for easier inspection'''
         model = Sequential()
 
-        # if not self.complex_inputs:
-        #     model.add(Lambda(lambda x: k_to_tf_complex(x)))
+        if not self.complex_inputs:
+            model.add(Lambda(lambda x: k_to_tf_complex(x)))
 
         model.add(self.input_layer)
         for cphase_layer, single_qubit_layer in zip(self.cphase_layers, self.single_qubit_layers):
             model.add(cphase_layer)
             model.add(single_qubit_layer)
 
-        # if not self.complex_outputs:
-        #     model.add(Lambda(lambda x: tf_to_k_complex(x)))
+        if not self.complex_outputs:
+            model.add(Lambda(lambda x: tf_to_k_complex(x)))
 
         return model
 
@@ -186,24 +175,24 @@ class QPGA(keras.Model):
     def call(self, inputs):
         x = inputs
 
-        # if not self.complex_inputs:
-        #     x = k_to_tf_complex(x)
+        if not self.complex_inputs:
+            x = k_to_tf_complex(x)
 
         x = self.input_layer(x)
         for cphase_layer, single_qubit_layer in zip(self.cphase_layers, self.single_qubit_layers):
             x = cphase_layer(x)
             x = single_qubit_layer(x)
 
-        # if not self.complex_outputs:
-        #     x = tf_to_k_complex(x)
+        if not self.complex_outputs:
+            x = tf_to_k_complex(x)
 
         return x
 
 
 def antifidelity(state_true, state_pred):
     # inner_prods = tf.einsum('bs,bs->b', tf.math.conj(state_true), state_pred)
-    # state_true = k_to_tf_complex(state_true)
-    # state_pred = k_to_tf_complex(state_pred)
+    state_true = k_to_tf_complex(state_true)
+    state_pred = k_to_tf_complex(state_pred)
     inner_prods = tf.reduce_sum(tf.multiply(tf.math.conj(state_true), state_pred), 1)
     amplitudes = tf.abs(inner_prods)
     return tf.ones_like(amplitudes) - amplitudes ** 2
