@@ -7,10 +7,10 @@ from tensorflow.python import keras
 from tensorflow.python.keras.optimizers import Adam
 from tqdm import tqdm
 
-from qpga import get_random_state_vector, QPGA, antifidelity
+from qpga import get_random_state_vector, QPGA, antifidelity, np_to_k_complex
 
 
-def prepare_training_data(squanch_circuit, num_qubits, num_states):
+def prepare_training_data(squanch_circuit, num_qubits, num_states, convert_to_k_complex=True):
     # Generate random state vectors
     in_states = np.array([get_random_state_vector(num_qubits) for _ in range(num_states)])
     in_states[0] = np.array([1] + [0] * (2 ** num_qubits - 1),
@@ -25,6 +25,10 @@ def prepare_training_data(squanch_circuit, num_qubits, num_states):
 
     out_states = np.copy(qstream.state)
 
+    if convert_to_k_complex:
+        in_states = np_to_k_complex(in_states)
+        out_states = np_to_k_complex(out_states)
+
     return in_states, out_states
 
 
@@ -35,7 +39,7 @@ def fidelity_depth_search(depths, in_data, out_data,
                           target_antifidelity = 1e-10,
                           learning_rate = 0.01,
                           max_epochs = 50,
-                          max_attempts = 3,
+                          max_attempts = 2,
                           batch_size = 32,
                           return_on_first_convergence = True):
     '''
