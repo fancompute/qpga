@@ -35,10 +35,10 @@ def prepare_training_data(squanch_circuit, num_qubits, num_states, convert_to_k_
 def fidelity_depth_search(depths, in_data, out_data,
                           log_path = None,
                           log_name = None,
-                          validation_split = 0.25,
+                          validation_split = 0.1,
                           target_antifidelity = 1e-10,
-                          learning_rate = 0.01,
-                          max_epochs = 50,
+                          learning_rate = 0.1,
+                          max_epochs = 99,
                           max_attempts = 2,
                           batch_size = 32,
                           return_on_first_convergence = True):
