@@ -66,10 +66,20 @@ def fidelity_depth_search(depths, in_data, out_data,
         print(f"\n\n\nTraining circuit of depth {depth} =============================================================")
         for attempt in range(max_attempts):
             print(f"\n\n=> Attempt {attempt + 1}/{max_attempts}...")
+            print("Instantiating model...")
             model = QPGA(num_qubits, depth).as_sequential()
+
+            print("Building model...")
+            model.build(in_data.shape)
+            print("Done building.")
+
+            print(model.summary())
+
+            print("Compiling model...")
             model.compile(optimizer = Adam(lr = learning_rate),
                           loss = antifidelity,
                           metrics = [antifidelity])
+            print("Done compiling.")
 
             if validation_split != 0.0:
                 early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss',
@@ -85,11 +95,13 @@ def fidelity_depth_search(depths, in_data, out_data,
             else:
                 callbacks = []
 
+            print("Fitting model...")
             history = model.fit(in_data, out_data, epochs = max_epochs,
                                 validation_split = validation_split,
                                 callbacks = callbacks,
                                 batch_size = batch_size,
                                 verbose = 2)
+            print("Done fitting.")
 
             antifid = history.history["antifidelity"][-1]
             fidelity = 1 - antifid

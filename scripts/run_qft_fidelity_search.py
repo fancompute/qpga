@@ -13,8 +13,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a fidelity search on QPGA with specified number of qubits")
     parser.add_argument('num_qubits', type=int)
     parser.add_argument('--start', type=int)
+    parser.add_argument('--num_states', type=int)
     parser.add_argument('--batch_size', type=int, default = 32)
     parser.add_argument('--max_attempts', type=int, default = 2)
+
 
     args = parser.parse_args()
     N = args.num_qubits
@@ -23,7 +25,10 @@ if __name__ == "__main__":
 
     print(f"Running fidelity search for {N} qubits...")
 
-    num_states = 2000 * N
+    if args.num_states :
+        num_states = args.num_states
+    else:
+        num_states = 2000 * N
 
     explicit_depth = QFT_layer_count(N, include_swap = True)
 
