@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a fidelity search on QPGA with specified number of qubits")
     parser.add_argument('num_qubits', type=int)
     parser.add_argument('--start', type=int)
+    parser.add_argument('--batch_size', type=int, default = 32)
 
     args = parser.parse_args()
     N = args.num_qubits
@@ -37,4 +38,5 @@ if __name__ == "__main__":
     fidelities = fidelity_depth_search(depths,
                                        in_data = in_data,
                                        out_data = out_data,
+                                       batch_size = args.batch_size,
                                        return_on_first_convergence = True)
