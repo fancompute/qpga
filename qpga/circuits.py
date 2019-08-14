@@ -3,9 +3,9 @@ import squanch
 from qpga import *
 
 
-def QFT(qubits):
+def QFT(qubits, num_ancillae=0):
     '''Applies quantum Fourier transform to inputs'''
-    N = len(qubits)
+    N = len(qubits) - num_ancillae
     for n in range(N, 0, -1):
         target = qubits[N - n]
         squanch.H(target)

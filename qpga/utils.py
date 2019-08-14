@@ -1,4 +1,5 @@
 import sys
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -80,6 +81,8 @@ class FrameWriterCallback(Callback):
 class Logger(object):
     def __init__(self, filename):
         self.terminal = sys.stdout
+        # make path if needed
+        os.makedirs(os.path.dirname(filename), exist_ok = True)
         self.log = open(filename, "w", buffering = 1)
 
     def write(self, message):
