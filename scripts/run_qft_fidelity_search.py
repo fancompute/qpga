@@ -1,9 +1,8 @@
-import sys
 import argparse
+import sys
 from datetime import datetime
 
 from tensorflow.python.keras import backend as K
-import tensorflow as tf
 
 sys.path.append("..")
 from qpga import *
@@ -11,17 +10,22 @@ from qpga.circuits import QFT, QFT_layer_count
 
 K.set_floatx('float64')
 
+# dynamically grow GPU memory to prevent tf from just claiming all of it at once
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+K.set_session(tf.Session(config = config))
+
 DEFAULT_BATCH_SIZE = 128 if tf.test.is_gpu_available() else 32
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run a fidelity search on QPGA with specified number of qubits")
-    parser.add_argument('num_qubits', type=int)
-    parser.add_argument('--start', type=int)
-    parser.add_argument('--num_states', type=int)
-    parser.add_argument('--num_ancillae', type=int, default = 0)
-    parser.add_argument('--batch_size', type=int, default = DEFAULT_BATCH_SIZE)
-    parser.add_argument('--max_attempts', type=int)
-    parser.add_argument('--target_antifidelity', type=float, default = 1e-3)
+    parser = argparse.ArgumentParser(description = "Run a fidelity search on QPGA with specified number of qubits")
+    parser.add_argument('num_qubits', type = int)
+    parser.add_argument('--start', type = int)
+    parser.add_argument('--num_states', type = int)
+    parser.add_argument('--num_ancillae', type = int, default = 0)
+    parser.add_argument('--batch_size', type = int, default = DEFAULT_BATCH_SIZE)
+    parser.add_argument('--max_attempts', type = int)
+    parser.add_argument('--target_antifidelity', type = float, default = 1e-3)
 
     args = parser.parse_args()
     N = args.num_qubits
