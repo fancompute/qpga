@@ -5,7 +5,7 @@ from tensorflow.python.keras import Sequential, Input
 from tensorflow.python.keras.backend import dot
 from tensorflow.python.keras.layers import Layer, Lambda
 
-from qpga import tf_to_k_complex, k_to_tf_complex
+from qpga.utils import tf_to_k_complex, k_to_tf_complex
 from qpga.constants import IDENTITY, CPHASE_MOD, BS_MATRIX, CPHASE
 from qpga.linalg import tensors
 

@@ -5,6 +5,9 @@ from tensorflow.python.keras import backend as K
 
 sys.path.append("..")
 from qpga import *
+from qpga.utils import *
+from qpga.state_preparation import *
+from qpga.fidelity_search import *
 
 K.set_floatx('float64')
 

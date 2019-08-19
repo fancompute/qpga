@@ -6,7 +6,8 @@ from squanch import QStream
 from tensorflow.python import keras
 from tqdm import tqdm
 
-from qpga import get_random_state_vector, np_to_k_complex
+from qpga.state_preparation import get_random_state_vector
+from qpga.utils import np_to_k_complex
 from qpga.training import build_and_train_qpga
 
 

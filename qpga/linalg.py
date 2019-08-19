@@ -61,7 +61,7 @@ def extract_operator_from_model(model, num_qubits=None):
 def extract_operator_from_circuit(circuit, num_qubits):
     '''
     Reduces the action of a SQUANCH circuit to a complex-valued matrix
-    :param model: a function representing the SQUANCH circuit
+    :param circuit: a function representing the SQUANCH circuit
     :return: np.ndarray of the operator it implements
     '''
     N = 2 ** num_qubits

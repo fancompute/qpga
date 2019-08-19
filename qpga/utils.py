@@ -3,7 +3,6 @@ import sys
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.callbacks import Callback
 from tqdm import tqdm, tqdm_notebook
 
 
@@ -68,18 +67,6 @@ def np_to_complex(x):
 def reshape_state_vector(state):
     dim = int(np.sqrt(len(state)))
     return np.reshape(state, (dim, dim))
-
-
-class FrameWriterCallback(Callback):
-
-    def __init__(self, input_state = None, target_state = None):
-        super().__init__()
-        self.input_state = input_state
-        self.target_state = target_state
-        self.predictions = []
-
-    def on_batch_begin(self, batch, logs = None):
-        self.predictions.append(self.model.predict(self.input_state))
 
 
 class Logger(object):

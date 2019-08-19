@@ -5,6 +5,8 @@ from datetime import datetime
 sys.path.append("..")
 from qpga import *
 from qpga.circuits import QFT, QFT_layer_count
+from qpga.utils import *
+from qpga.fidelity_search import *
 
 # dynamically grow GPU memory to prevent tf from just claiming all of it at once
 config = tf.ConfigProto()
