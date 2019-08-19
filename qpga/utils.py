@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 import numpy as np
 import tensorflow as tf
@@ -51,6 +51,10 @@ def np_to_k_complex(x):
 
 def k_to_tf_complex(x):
     return tf.complex(k_real(x), k_imag(x))
+
+
+def k_to_np_complex(x):
+    return k_real(x) + 1j * k_imag(x)
 
 
 def tf_to_k_complex(x):

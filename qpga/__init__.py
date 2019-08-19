@@ -1,3 +1,6 @@
+from tensorflow.python.keras import backend as K
+K.set_floatx('float64')
+
 from qpga.constants import *
 from qpga.linalg import *
 from qpga.utils import *

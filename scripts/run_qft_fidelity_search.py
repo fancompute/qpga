@@ -2,13 +2,9 @@ import argparse
 import sys
 from datetime import datetime
 
-from tensorflow.python.keras import backend as K
-
 sys.path.append("..")
 from qpga import *
 from qpga.circuits import QFT, QFT_layer_count
-
-K.set_floatx('float64')
 
 # dynamically grow GPU memory to prevent tf from just claiming all of it at once
 config = tf.ConfigProto()
@@ -19,7 +15,7 @@ DEFAULT_BATCH_SIZE = 128 if tf.test.is_gpu_available() else 32
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "Run a fidelity search on QPGA with specified number of qubits")
-    parser.add_argument('num_qubits', type = int)
+    parser.add_argument('--num_qubits', type = int, default = 4)
     parser.add_argument('--start', type = int)
     parser.add_argument('--num_states', type = int)
     parser.add_argument('--num_ancillae', type = int, default = 0)
@@ -52,7 +48,7 @@ if __name__ == "__main__":
     else:
         num_states = 2000 * N
 
-    explicit_depth = QFT_layer_count(N, include_swap = True)
+    explicit_depth = QFT_layer_count(N, nearest_neighbor_only = True)
 
     if args.start:
         depths = list(range(args.start, explicit_depth))

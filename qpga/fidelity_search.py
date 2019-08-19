@@ -4,10 +4,10 @@ from pprint import pprint
 import numpy as np
 from squanch import QStream
 from tensorflow.python import keras
-from tensorflow.python.keras.optimizers import Adam
 from tqdm import tqdm
 
-from qpga import get_random_state_vector, QPGA, antifidelity, np_to_k_complex
+from qpga import get_random_state_vector, np_to_k_complex
+from qpga.training import build_and_train_qpga
 
 
 def prepare_training_data(squanch_circuit, num_qubits, num_states, convert_to_k_complex = True):
@@ -65,50 +65,16 @@ def fidelity_depth_search(depths, in_data, out_data, path,
         print(f"\n\n\nTraining circuit of depth {depth} =============================================================")
         for attempt in range(max_attempts):
             print(f"\n\n=> Attempt {attempt + 1}/{max_attempts}...")
-            print("Instantiating model...")
-            model = QPGA(num_qubits, depth).as_sequential()
 
-            print("Building model...")
-            model.build(in_data.shape)
-            print("Done building.")
+            log_dir = f"{path}/tensorboard/depth_{depth}_attempt{attempt}"
 
-            print(model.summary())
-
-            print("Compiling model...")
-            model.compile(optimizer = Adam(lr = learning_rate),
-                          loss = antifidelity,
-                          metrics = [antifidelity])
-            print("Done compiling.")
-
-            if validation_split != 0.0:
-                early_stop = keras.callbacks.EarlyStopping(monitor = 'val_loss',
-                                                           patience = 6,
-                                                           min_delta = target_antifidelity / 10,
-                                                           verbose = 1,
-                                                           restore_best_weights = True)
-                reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',
-                                                              factor = 0.5,
-                                                              cooldown = 4,
-                                                              patience = 2,
-                                                              verbose = 1,
-                                                              min_lr = 1e-6)
-                log_dir = f"{path}/tensorboard/depth_{depth}_attempt{attempt}"
-                logger = keras.callbacks.TensorBoard(log_dir = log_dir,
-                                                     write_graph = True,
-                                                     write_images = True,
-                                                     histogram_freq = 0  # github.com/tensorflow/tensorflow/issues/30094
-                                                     )
-                callbacks = [early_stop, reduce_lr, logger]
-            else:
-                callbacks = []
-
-            print("Fitting model...")
-            history = model.fit(in_data, out_data, epochs = max_epochs,
-                                validation_split = validation_split,
-                                callbacks = callbacks,
-                                batch_size = batch_size,
-                                verbose = 2)
-            print("Done fitting.")
+            model, history = build_and_train_qpga(depth, in_data, out_data,
+                                                  validation_split = validation_split,
+                                                  target_antifidelity = target_antifidelity,
+                                                  learning_rate = learning_rate,
+                                                  max_epochs = max_epochs,
+                                                  batch_size = batch_size,
+                                                  log_dir = log_dir)
 
             antifid = history.history["antifidelity"][-1]
             fidelity = 1 - antifid

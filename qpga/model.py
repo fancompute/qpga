@@ -181,7 +181,8 @@ class QPGA(keras.Model):
     def as_sequential(self):
         '''Converts the QPGA instance into a sequential model for easier inspection'''
         model = Sequential()
-
+        model.num_qubits = self.num_qubits
+        model.complex_inputs = self.complex_inputs
         if not self.complex_inputs:
             model.add(Input(shape = (2, self.input_dim,), dtype = 'float64'))
             model.add(Lambda(lambda x: k_to_tf_complex(x), output_shape = (self.input_dim,)))
@@ -193,6 +194,7 @@ class QPGA(keras.Model):
             model.add(cphase_layer)
             model.add(single_qubit_layer)
 
+        model.complex_outputs = self.complex_outputs
         if not self.complex_outputs:
             model.add(Lambda(lambda x: tf_to_k_complex(x)))
 

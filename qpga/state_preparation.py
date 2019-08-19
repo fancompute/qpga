@@ -1,6 +1,12 @@
 import numpy as np
 
 
+def get_basis_state(n, num_qubits):
+    '''Gets the nth computational basis vector in the 2^num_qubits dimensional space'''
+    assert n < 2 ** num_qubits
+    return np.array(list(map(int, format(n, 'b').zfill(num_qubits))), dtype=np.complex128)
+
+
 def get_random_state_vector(num_qubits):
     '''Returns a random 2**n-sized complex-valued state vector'''
     N = 2 ** num_qubits
