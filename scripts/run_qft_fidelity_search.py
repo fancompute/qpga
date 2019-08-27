@@ -13,7 +13,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 K.set_session(tf.Session(config = config))
 
-DEFAULT_BATCH_SIZE = 128 if tf.test.is_gpu_available() else 32
+DEFAULT_BATCH_SIZE = 64 if tf.test.is_gpu_available() else 32
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "Run a fidelity search on QPGA with specified number of qubits")
