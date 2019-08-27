@@ -35,6 +35,7 @@ class OperatorHistoryCallback(Callback):
         self.fidelities_val = []
         self.fidelity_initial = None
         self.operators = []
+        self.operator_initial = None
 
         self.store_all_batches = store_all_batches
         self.fidelities_train_batches = []
@@ -75,6 +76,7 @@ class OperatorHistoryCallback(Callback):
         if self.in_data is not None and self.out_data is not None:
             self.fidelity_initial = self.model.evaluate(self.in_data, self.out_data)
             print("Initial fidelity: {}".format(self.fidelity_initial))
+            self.operator_initial = extract_operator_from_model(self.model)
 
     def on_train_end(self, logs = None):
         # Save all the data to a file
@@ -84,6 +86,7 @@ class OperatorHistoryCallback(Callback):
         f.create_dataset('fidelities_train', data = self.fidelities_train)
         f.create_dataset('fidelity_initial', data = self.fidelity_initial)
         f.create_dataset('operators', data = self.operators)
+        f.create_dataset('operator_initial', data = self.operator_initial)
         if self.store_all_batches:
             f.create_dataset('fidelities_val_batches', data = self.fidelities_val_batches)
             f.create_dataset('fidelities_train_batches', data = self.fidelities_train_batches)

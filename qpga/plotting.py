@@ -113,7 +113,7 @@ def hinton(W, xlabels = None, ylabels = None, labelsize = 9, title = None, fig =
 
     # Make title in corner
     if title is not None:
-        plt.text(-.05, 1.05, title, ha = 'center', va = 'center', fontsize = 22, transform = ax.transAxes)
+        plt.text(-.07, 1.05, title, ha = 'center', va = 'center', fontsize = 22, transform = ax.transAxes)
 
     return fig, ax
 
