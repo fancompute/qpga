@@ -48,9 +48,9 @@ if __name__ == "__main__":
     if args.num_states:
         num_states = args.num_states
     else:
-        num_states = 2000 * N
+        num_states = 1000 + 10 * 2**N
 
-    explicit_depth = QFT_layer_count(N, nearest_neighbor_only = True)
+    explicit_depth = QFT_layer_count(N, nearest_neighbor_only = True, include_reshuffling = True)
 
     if args.start:
         depths = list(range(args.start, explicit_depth))
@@ -62,11 +62,11 @@ if __name__ == "__main__":
     else:
         size = N + args.num_ancillae
         if size <= 4:
+            max_attempts = 6
+        elif size <= 5:
             max_attempts = 4
-        elif size <= 6:
-            max_attempts = 3
         else:
-            max_attempts = 2
+            max_attempts = 3
 
     print(f"Preparing {num_states} training states...")
 
