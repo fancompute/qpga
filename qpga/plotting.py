@@ -59,7 +59,7 @@ def computational_basis_labels(num_qubits, include_bras = True):
         return kets
 
 
-def hinton(W, xlabels = None, ylabels = None, title = None, fig = None, ax = None, cmap = None):
+def hinton(W, xlabels = None, ylabels = None, labelsize = 9, title = None, fig = None, ax = None, cmap = None):
     #     cmap = plt.get_cmap('hsv')
     cmap = plt.get_cmap('twilight')
 
@@ -90,7 +90,7 @@ def hinton(W, xlabels = None, ylabels = None, title = None, fig = None, ax = Non
     if xlabels:
         ax.set_xticklabels(xlabels, rotation = 'vertical')
         ax.xaxis.tick_top()
-    ax.tick_params(axis = 'x', labelsize = 9, pad = 0)
+    ax.tick_params(axis = 'x', labelsize = labelsize, pad = 0)
     ax.xaxis.set_ticks_position('none')
 
     # y axis
@@ -98,7 +98,7 @@ def hinton(W, xlabels = None, ylabels = None, title = None, fig = None, ax = Non
     ax.yaxis.set_ticks_position('none')
     if ylabels:
         ax.set_yticklabels(list(reversed(ylabels)))
-    ax.tick_params(axis = 'y', labelsize = 9, pad = 0)
+    ax.tick_params(axis = 'y', labelsize = labelsize, pad = 0)
 
     # color axis
     divider = make_axes_locatable(ax)

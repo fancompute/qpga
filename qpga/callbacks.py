@@ -1,9 +1,11 @@
 from datetime import datetime
 
 import h5py
+import numpy as np
 from tensorflow.python.keras.callbacks import Callback
 
 from qpga.linalg import extract_operator_from_model
+from qpga.utils import np_to_k_complex
 
 
 class FrameWriterCallback(Callback):
@@ -20,17 +22,29 @@ class FrameWriterCallback(Callback):
 
 class OperatorHistoryCallback(Callback):
 
-    def __init__(self, num_qubits = 0, filename = None, store_all_batches = False, path = './'):
+    def __init__(self,
+                 num_qubits = 0,
+                 filename = None,
+                 store_all_batches = False,
+                 path = './',
+                 in_data = None,
+                 out_data = None):
         super().__init__()
         self.start_time = datetime.now()
         self.fidelities_train = []
         self.fidelities_val = []
+        self.fidelity_initial = None
         self.operators = []
 
         self.store_all_batches = store_all_batches
         self.fidelities_train_batches = []
         self.fidelities_val_batches = []
         self.operators_batches = []
+
+        self.in_data = in_data
+        self.out_data = out_data
+
+
 
         if filename:
             self.filename = filename
@@ -52,12 +66,23 @@ class OperatorHistoryCallback(Callback):
         self.fidelities_val.append(1 - logs.get('val_antifidelity'))
         self.operators.append(extract_operator_from_model(self.model))
 
+    def on_train_begin(self, logs = None):
+        # basis_vecs = np.eye(2 ** self.model.num_qubits, dtype = np.complex128)
+        # if not self.model.complex_inputs:
+        #     basis_vecs = np_to_k_complex(basis_vecs)
+        # self.fidelity_initial = self.model.evaluate(basis_vecs, callbacks=[])
+        # print("Initial fidelity: {}".format(self.fidelity_initial))
+        if self.in_data is not None and self.out_data is not None:
+            self.fidelity_initial = self.model.evaluate(self.in_data, self.out_data)
+            print("Initial fidelity: {}".format(self.fidelity_initial))
+
     def on_train_end(self, logs = None):
         # Save all the data to a file
         print("Writing data to {}...".format(self.filename))
         f = h5py.File(self.filename, 'w')
         f.create_dataset('fidelities_val', data = self.fidelities_val)
         f.create_dataset('fidelities_train', data = self.fidelities_train)
+        f.create_dataset('fidelity_initial', data = self.fidelity_initial)
         f.create_dataset('operators', data = self.operators)
         if self.store_all_batches:
             f.create_dataset('fidelities_val_batches', data = self.fidelities_val_batches)
