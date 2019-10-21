@@ -1,4 +1,4 @@
-from tensorflow.python.keras import backend as K
+from tensorflow.keras import backend as K
 K.set_floatx('float64')
 
 # from qpga.constants import *

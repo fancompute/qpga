@@ -1,11 +1,9 @@
 from datetime import datetime
 
 import h5py
-import numpy as np
 from tensorflow.python.keras.callbacks import Callback
 
 from qpga.linalg import extract_operator_from_model
-from qpga.utils import np_to_k_complex
 
 
 class FrameWriterCallback(Callback):
@@ -44,8 +42,6 @@ class OperatorHistoryCallback(Callback):
 
         self.in_data = in_data
         self.out_data = out_data
-
-
 
         if filename:
             self.filename = filename
@@ -96,7 +92,13 @@ class OperatorHistoryCallback(Callback):
 
 class StatePreparationHistoryCallback(Callback):
 
-    def __init__(self, num_qubits = 0, input_state = None, target_state = None, filename = None, path = './'):
+    def __init__(self,
+                 num_qubits = 0,
+                 input_state = None,
+                 target_state = None,
+                 filename = None,
+                 groupname = None,
+                 path = './'):
         super().__init__()
         self.start_time = datetime.now()
         self.input_state = input_state
@@ -110,6 +112,18 @@ class StatePreparationHistoryCallback(Callback):
             start = self.start_time.strftime("%Y.%m.%d.%H.%M.%S")
             self.filename = path + "state_history_{}_qubits_{}.h5".format(num_qubits, start)
 
+        self.groupname = groupname
+        self.mode = 'a' if self.groupname is not None else 'w'  # if using groups, don't truncate existing file
+
+    def on_train_begin(self, logs = None):
+        # Compute initial fidelity
+        if self.input_state is not None and self.target_state is not None:
+            antifidelity = self.model.evaluate(self.input_state, self.target_state)
+            self.fidelities.append(1 - antifidelity)
+
+            output_state = self.model.predict(self.in_data)
+            self.output_states.append(output_state)
+
     def on_train_batch_end(self, batch, logs = None):
         self.fidelities.append(1 - logs.get('antifidelity'))
         output_state = self.model.predict(self.input_state)
@@ -118,9 +132,14 @@ class StatePreparationHistoryCallback(Callback):
     def on_train_end(self, logs = None):
         # Save all the data to a file
         print("Writing data to {}...".format(self.filename))
-        f = h5py.File(self.filename, 'w')
-        f.create_dataset('input_state', data = self.input_state)
-        f.create_dataset('target_state', data = self.target_state)
-        f.create_dataset('fidelities', data = self.fidelities)
-        f.create_dataset('output_states', data = self.output_states)
+        f = h5py.File(self.filename, self.mode)
+        if self.groupname is not None:
+            group = f.create_group(self.groupname)
+            writeto = group
+        else:
+            writeto = f
+        writeto.create_dataset('input_state', data = self.input_state)
+        writeto.create_dataset('target_state', data = self.target_state)
+        writeto.create_dataset('fidelities', data = self.fidelities)
+        writeto.create_dataset('output_states', data = self.output_states)
         f.close()

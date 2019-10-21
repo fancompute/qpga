@@ -60,8 +60,9 @@ def computational_basis_labels(num_qubits, include_bras = True):
 
 
 def hinton(W, xlabels = None, ylabels = None, labelsize = 9, title = None, fig = None, ax = None, cmap = None):
-    #     cmap = plt.get_cmap('hsv')
-    cmap = plt.get_cmap('twilight')
+
+    if cmap is None:
+        cmap = plt.get_cmap('twilight')
 
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize = (4, 4))
@@ -117,20 +118,39 @@ def hinton(W, xlabels = None, ylabels = None, labelsize = 9, title = None, fig =
 
     return fig, ax
 
-
-def loss_plot(loss_val, loss_train, x_units = "epochs", x_max = None, fig = None, ax = None):
+def loss_plot(loss_val, loss_train = None, x_units = "epochs", x_max = None, fig = None, ax = None, ylabel = None,
+               ylabel_pos = 'left', log_fidelity = False):
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize = (4, 4))
+
+    if log_fidelity:
+        loss_val = np.log10(loss_val)
+        if loss_train is not None:
+            loss_train = np.log10(loss_train)
 
     ax.plot(loss_val, linestyle = '-', label = "Validation")
     ax.fill_between(np.arange(len(loss_val)), loss_val, alpha = 0.1)
 
-    ax.plot(loss_train, linestyle = ':', label = "Training")
+    if loss_train is not None:
+        ax.plot(loss_train, linestyle = ':', label = "Training")
+        ax.legend(loc = 'upper left')
 
-    ax.legend(loc = 'upper left')
-    ax.set_xlim(0, x_max - 1)
-    ax.set_ylim(0, 1)
-    ax.set_ylabel("Fidelity $\mathcal{F} = \left< \psi \\right| \\tilde{U}^{\\dagger} \hat{U} \left| \psi \\right>$")
+    if x_max is not None:
+        ax.set_xlim(0, x_max - 1)
+    else:
+        ax.set_xlim(0, len(loss_val) - 1)
+
+    if not log_fidelity:
+        ax.set_ylim(0, 1)
+
+    ax.yaxis.set_label_position(ylabel_pos)
+
+    if ylabel is None:
+        ylabel = "$\mathcal{F} = | \left< \psi \\right| \\tilde{U}^{\\dagger} \hat{U} \left| \psi \\right> |^2$"
+    if ylabel_pos == 'left':
+        ax.set_ylabel(ylabel, rotation = 90)
+    else:
+        ax.set_ylabel(ylabel, rotation = 270, va = 'bottom')
 
     if x_units == 'epochs':
         ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(integer = True))
