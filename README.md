@@ -42,11 +42,13 @@ Training histories are written to `h5py` files which are not included in this re
 
 ## Supplementary materials
 
-Supplementary materials for the arXiv version of the paper are listed below.
+Supplementary materials for the arXiv version of the paper are listed below. Click an image to view it in higher resolution, or click the [source] link to download the original file.
 
 ### S1: Conceptual animation of the two-photon scattering process described in Section IIB
 
-TODO
+[![](https://thumbs.gfycat.com/BlondDefiniteGoitered-size_restricted.gif)](https://gfycat.com/blonddefinitegoitered)
+
+[[source]](https://github.com/fancompute/qpga/raw/master/assets/gate_animation.mp4)
 
 This animation depicts the four steps of the two-photon scattering process:
 1. Photon $A$ at frequency $\omega$ causes the atom, which is initialized in state $\ket{1}$, to partially transition from $\ket{1} \rightarrow \ket{3}$ with an amplitude of $\ket{3}$ corresponding to the photon occupancy in the waveguide. This emits an auxiliary photon $A'$ with frequency $\omega'$, which is reflected by one of the narrow-band mirrors and travels down the delay line. 
@@ -56,6 +58,8 @@ This animation depicts the four steps of the two-photon scattering process:
 
 ### S2: Animation depicting optimization of a QPGA to perform a five-qubit quantum Fourier transform
 
-TODO
+[![](https://thumbs.gfycat.com/SafeDigitalAbyssiniangroundhornbill-size_restricted.gif)](https://gfycat.com/safedigitalabyssiniangroundhornbill)
+
+[[source]](https://github.com/fancompute/qpga/raw/master/assets/qft_training.mp4)
 
 Optimization of a QPGA to prepare a quantum Fourier transform on five input qubits. (Top left) The operator implemented by the QPGA at each point in training. The square array represents the magnitude (relative to the maximum element) and phase of the projection of the operator onto the lexicographically-ordered computational basis states, encoded in the respective size and hue of the squares. (Top right) The target 5-qubit QFT operator. (Bottom) Fidelity between the implemented and target operator over the course of training. 
