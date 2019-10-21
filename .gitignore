@@ -4,6 +4,8 @@ PennyLane_examples/
 logs/
 private/
 
+.DS_Store
+
 # Standard stuff ===============================================================
 
 # Visual studio / PyCharm stuff
