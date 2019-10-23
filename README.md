@@ -4,7 +4,7 @@
 
 ## Overview
 
-This repository contains the gradient-based optimization code for the paper "Universal programmable photonic architecture for quantum information processing" by Bartlett and Fan. In this paper, we present a photonic integrated circuit architecture for a quantum programmable gate array (QPGA) capable of preparing arbitrary quantum states and operators. The architecture consists of a lattice of phase-modulated Mach-Zehnder interferometers, which perform rotations on path-encoded photonic qubits, and embedded quantum emitters, which use a two-photon scattering process to implement a deterministic controlled-Z operation between adjacent qubits. By appropriately setting phase shifts within the lattice, the device can be programmed to implement any quantum circuit without hardware modifications. We provide algorithms for exactly preparing arbitrary quantum states and operators on the device and we show that gradient-based optimization can train a simulated QPGA to automatically implement highly compact approximations to important quantum circuits with near-unity fidelity.
+This repository contains the gradient-based optimization code for the paper "[Universal programmable photonic architecture for quantum information processing](https://arxiv.org/abs/1910.10141)". In this paper, we present a photonic integrated circuit architecture for a quantum programmable gate array (QPGA) capable of preparing arbitrary quantum states and operators. The architecture consists of a lattice of phase-modulated Mach-Zehnder interferometers, which perform rotations on path-encoded photonic qubits, and embedded quantum emitters, which use a two-photon scattering process to implement a deterministic controlled-Z operation between adjacent qubits. By appropriately setting phase shifts within the lattice, the device can be programmed to implement any quantum circuit without hardware modifications. We provide algorithms for exactly preparing arbitrary quantum states and operators on the device and we show that gradient-based optimization can train a simulated QPGA to automatically implement highly compact approximations to important quantum circuits with near-unity fidelity.
 
 
 ## Dependencies
@@ -63,3 +63,20 @@ This animation depicts the four steps of the two-photon scattering process:
 [[source]](https://github.com/fancompute/qpga/raw/master/assets/qft_training.mp4)
 
 Optimization of a QPGA to prepare a quantum Fourier transform on five input qubits. (Top left) The operator implemented by the QPGA at each point in training. The square array represents the magnitude (relative to the maximum element) and phase of the projection of the operator onto the lexicographically-ordered computational basis states, encoded in the respective size and hue of the squares. (Top right) The target 5-qubit QFT operator. (Bottom) Fidelity between the implemented and target operator over the course of training. 
+
+
+## Citing
+
+If you found this paper or repository useful, please cite us using:
+
+```
+@article{Bartlett2019Universal,
+    title={Universal programmable photonic architecture for quantum information processing},
+    author={Ben Bartlett and Shanhui Fan},
+    year={2019},
+    eprint={1910.10141},
+    archivePrefix={arXiv},
+    primaryClass={quant-ph}
+}
+```
+
